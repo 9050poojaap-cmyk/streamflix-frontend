@@ -4,21 +4,20 @@ const cors = require("cors");
 
 const app = express();
 
-// Middleware
+// ===== Middleware =====
 app.use(cors());
 app.use(express.json());
 
-// Movie Schema
+// ===== Movie Schema =====
 const movieSchema = new mongoose.Schema({
   title: { type: String, required: true },
   poster: { type: String, required: true },
   trailer: { type: String, required: true },
 });
 
-// Movie Model
 const Movie = mongoose.model("Movie", movieSchema);
 
-// USER SCHEMA
+// ===== User Schema =====
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -27,13 +26,14 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
+// ===== Routes =====
 
-// Root route
+// Root
 app.get("/", (req, res) => {
   res.send("StreamFlix backend is running");
 });
 
-// ✅ GET all movies (Home page)
+// Get all movies
 app.get("/movies", async (req, res) => {
   try {
     const movies = await Movie.find();
@@ -43,7 +43,7 @@ app.get("/movies", async (req, res) => {
   }
 });
 
-// ✅ GET movie by ID (Trailer page)
+// Get movie by ID
 app.get("/movies/:id", async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.id);
@@ -56,7 +56,7 @@ app.get("/movies/:id", async (req, res) => {
   }
 });
 
-// ✅ ADD a new movie
+// Add movie
 app.post("/movies", async (req, res) => {
   try {
     const movie = new Movie(req.body);
@@ -67,7 +67,7 @@ app.post("/movies", async (req, res) => {
   }
 });
 
-// REGISTER
+// Register
 app.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -80,13 +80,13 @@ app.post("/register", async (req, res) => {
     const user = new User({ email, password });
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.json({ message: "User registered successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// LOGIN
+// Login
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -105,21 +105,22 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ADD / REMOVE WATCHLIST
+// Toggle watchlist
 app.post("/watchlist/:movieId", async (req, res) => {
   try {
     const { userId } = req.body;
     const { movieId } = req.params;
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const index = user.watchlist.indexOf(movieId);
-
     if (index === -1) {
-      user.watchlist.push(movieId); // add
+      user.watchlist.push(movieId);
     } else {
-      user.watchlist.splice(index, 1); // remove
+      user.watchlist.splice(index, 1);
     }
 
     await user.save();
@@ -129,31 +130,28 @@ app.post("/watchlist/:movieId", async (req, res) => {
   }
 });
 
-// GET WATCHLIST
+// Get watchlist
 app.get("/watchlist/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).populate("watchlist");
-    if (!user) return res.status(404).json({ message: "User not found" });
-
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
     res.json(user.watchlist);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-
-// MongoDB connection
+// ===== MongoDB =====
 mongoose
- mongoose
-  .connect(
-    "mongodb+srv://9050poojaap_db_user:I1AY0c8A0Y57ETTv@streamflix-cluster.jzf2g4g.mongodb.net/streamflixDB?retryWrites=true&w=majority"
-  )
-  .then(() => console.log("MongoDB Atlas connected to streamflixDB"))
-  .catch((err) => console.log(err));
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error(err));
 
-  
-
-// Start server
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+// ===== Server =====
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
+
