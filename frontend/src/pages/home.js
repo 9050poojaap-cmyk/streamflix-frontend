@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getMovies } from "../api";
+
 const overlayStyle = `
   div:hover > .overlay {
     opacity: 1;
@@ -16,10 +18,18 @@ function Home() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/movies")
-      .then((res) => res.json())
-      .then((data) => setMovies(data));
-  }, []);
+  const fetchMovies = async () => {
+    try {
+      const data = await getMovies();
+      setMovies(data);
+    } catch (err) {
+      console.error("Failed to load movies", err);
+    }
+  };
+
+  fetchMovies();
+}, []);
+
 
   return (
     <div style={{ backgroundColor: "#141414", minHeight: "100vh", color: "white" }}> 
