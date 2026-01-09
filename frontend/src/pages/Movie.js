@@ -1,39 +1,35 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getMovie, getWatchlist, toggleWatchlist } from "../api";
 
 function Movie() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [movie, setMovie] = useState(null);
   const [inList, setInList] = useState(false);
+
   const userId = localStorage.getItem("userId");
 
-  // Fetch movie
+  // ✅ Fetch movie
   useEffect(() => {
-    fetch(`http://localhost:5000/movies/${id}`)
-      .then((res) => res.json())
-      .then((data) => setMovie(data));
+    getMovie(id).then((data) => setMovie(data));
   }, [id]);
 
-  // Check if movie already in watchlist
+  // ✅ Check watchlist
   useEffect(() => {
     if (!userId) return;
 
-    fetch(`http://localhost:5000/watchlist/${userId}`)
-      .then((res) => res.json())
-      .then((list) => {
-        const exists = list.some((m) => m._id === id);
-        setInList(exists);
-      });
+   getWatchlist(userId).then((data) => {
+  const exists = data.movies?.some((m) => m._id === id);
+  setInList(exists);
+});
+
   }, [id, userId]);
 
-  const toggleWatchlist = async () => {
-    await fetch(`http://localhost:5000/watchlist/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
-
+  // ✅ Toggle watchlist
+  const handleWatchlist = async () => {
+    await toggleWatchlist(id, userId);
     setInList(!inList);
   };
 
@@ -81,9 +77,9 @@ function Movie() {
         {movie.title}
       </h1>
 
-      {/* WATCHLIST BUTTON */}
+      {/* Watchlist Button */}
       <button
-        onClick={toggleWatchlist}
+        onClick={handleWatchlist}
         style={{
           backgroundColor: inList ? "#555" : "#e50914",
           color: "white",
@@ -118,3 +114,4 @@ function Movie() {
 }
 
 export default Movie;
+
