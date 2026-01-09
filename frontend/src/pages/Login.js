@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../api";   // ✅ USE API FILE
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -11,18 +12,10 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await loginUser(email, password); // ✅ NO localhost
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Login failed");
+      if (data.message && !data.userId) {
+        setError(data.message);
         return;
       }
 
@@ -30,16 +23,15 @@ function Login() {
       localStorage.setItem("userId", data.userId);
 
       // Play Netflix sound
-const sound = new Audio("/netflix.mp3");
-sound.volume = 0.6;
-sound.play();
+      const sound = new Audio("/netflix.mp3");
+      sound.volume = 0.6;
+      sound.play();
 
-
-      // Redirect to home
       navigate("/");
     } catch (err) {
-      setError("Server error");
-    }
+  setError(err.message);
+}
+
   };
 
   return (
@@ -61,14 +53,7 @@ sound.play();
           borderRadius: "8px",
         }}
       >
-        <h2
-          style={{
-            color: "white",
-            marginBottom: "30px",
-            fontSize: "28px",
-            fontWeight: "700",
-          }}
-        >
+        <h2 style={{ color: "white", marginBottom: "30px" }}>
           Sign In
         </h2>
 
@@ -84,14 +69,6 @@ sound.play();
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "15px",
-            borderRadius: "4px",
-            border: "none",
-            outline: "none",
-          }}
         />
 
         <input
@@ -100,32 +77,9 @@ sound.play();
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "20px",
-            borderRadius: "4px",
-            border: "none",
-            outline: "none",
-          }}
         />
 
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: "#e50914",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-          }}
-        >
-          Sign In
-        </button>
+        <button type="submit">Sign In</button>
       </form>
     </div>
   );
