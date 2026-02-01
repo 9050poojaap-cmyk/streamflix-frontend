@@ -5,7 +5,7 @@ It allows users to browse movies, watch trailers, and manage a personal watchlis
 
 🔗 **Live Demo (Frontend)**: https://streamflix-frontend-ruby.vercel.app  
 🔗 **Backend API**: https://streamflix-backend-pcrr.onrender.com  
-
+🔗 **DEMO VIDEO**: https://drive.google.com/drive/folders/1BwitJGC8wKuGNy71wEDY9t21z4xj4yfJ?usp=sharing
 ---
 
 ## 🚀 Features
